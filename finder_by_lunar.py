@@ -1,6 +1,11 @@
+from typing import Set, Dict, Union, Any
+
+import pip
+
+pip.main(["install", "lunar_python"])
+from datetime import datetime
 from lunar_python import Lunar
 from lunar_python import Solar
-from datetime import datetime
 
 
 def abort(s: str) -> bool:
@@ -8,9 +13,8 @@ def abort(s: str) -> bool:
 
 
 def finder():
-    date = datetime.today()
     while True:
-        input_time = input("请输入丢失物品的时间（例如：2008-08-15 20:30:28）:")
+        input_time = input("请输入丢失物品的时间（例如：2008-08-15 20:30:28，精确到小时）:")
         if abort(input_time):
             return
 
@@ -27,71 +31,80 @@ def finder():
         try:
             date = datetime(year=int(lost_date[0]), month=int(lost_date[1]), day=int(lost_date[2]),
                             hour=int(lost_time[0]), minute=int(lost_time[1]), second=int(lost_time[2]))
-            break
         except ValueError:
             print("日期非法")
+            continue
 
-    solar = Solar.fromDate(date)
-    lunar = Lunar.fromSolar(solar)
-    info = lunar.toFullString().split(" ")
-    lunar_day: str = info[4].split("(")[0][0]
-    lunar_hour: str = info[5].split("(")[0][0]
+        solar = Solar.fromDate(date)
+        lunar = Lunar.fromSolar(solar)
+        day_gan = lunar.getDayGan()
+        time_zhi = lunar.getTimeZhi()
+        duty = lunar.getZhiXing()
 
-    dir_dic = {
-        "甲": "正东",
-        "乙": "正南",
-        "丙": "西南",
-        "丁": "西北",
-        "戊": "正北",
-        "己": "东南",
-        "庚": "正西",
-        "辛": "西南",
-        "壬": "东北",
-        "癸": "东北",
-    }
+        # 甲、乙、丙、丁、戊、己、庚、辛、壬、癸
+        # 子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥
+        # 建、除、满、平、定、执、破、危、成、收、开、闭
+        unlucky_list = [{"甲", "己", "申", "酉"},
+                        {"乙", "庚", "午", "未"},
+                        {"丙", "辛", "辰", "巳"},
+                        {"丁", "壬", "寅", "卯"},
+                        {"戊", "癸", "子", "丑"}]
+        could_found = True
+        for unlucky in unlucky_list:
+            if day_gan in unlucky and time_zhi in unlucky:
+                print("放弃吧，找不回来了。正所谓，旧的不去新的不来!")
+                could_found = False
+                break
 
-    take_person_dic = {
-        "甲": "男人",
-        "乙": "女人",
-        "丙": "小孩",
-        "丁": "亲人",
-        "戊": "还在家",
-        "己": "男人",
-        "庚": "女人",
-        "辛": "小孩",
-        "壬": "亲人",
-        "癸": "还在家",
-    }
+        if could_found:
+            easy = {"满", "成", "定", "执"}
+            far = {"危", "收"}
+            nearly = {"开", "除"}
+            hopeless = {"建", "平", "破", "闭"}
 
-    distance_dic = {
-        "甲": "大概5里",
-        "乙": "千里之遥",
-        "丙": "大概10里",
-        "丁": "大概3里",
-        "戊": "就在原地",
-        "己": "大概5里",
-        "庚": "千里之遥",
-        "辛": "大概10里",
-        "壬": "大概3里",
-        "癸": "就在原地",
-    }
+            direction: Dict[Union[str, Any], Union[str, Any]] = {
+                "建": "正西",
+                "除": "正西",
+                "满": "东北",
+                "平": "正东",
+                "定": "西南",
+                "执": "东南",
+                "破": "西北",
+                "危": "正北",
+                "成": "西北",
+                "收": "正东",
+                "开": "正南",
+                "闭": "正南"
+            }
 
-    way_idc = {
-        "子": "去路旁找",
-        "丑": "就在身边",
-        "寅": "放弃吧！已落入他人之手，找不到了",
-        "卯": "去路旁找",
-        "辰": "就在身边",
-        "巳": "放弃吧！已落入他人之手，找不到了",
-        "午": "去路旁找",
-        "未": "就在身边",
-        "申": "放弃吧！已落入他人之手，找不到了",
-        "酉": "去路旁找",
-        "戌": "就在身边",
-        "亥": "放弃吧！已落入他人之手，找不到了"
-    }
+            place: Dict[Union[str, Any], Union[str, Any]] = {
+                "子": "在树林里或者木头多的地方",
+                "丑": "在树林里或者木头多的地方",
+                "寅": "在山坡上面或者斜着的地方",
+                "卯": "在山坡上面或者斜着的地方",
+                "辰": "问一下身边的亲朋好友",
+                "巳": "问一下身边的亲朋好友",
+                "午": "在桌椅等平面上",
+                "未": "在桌椅等平面上",
+                "申": "去路边找找",
+                "酉": "去路边找找",
+                "戌": "悬在半空，比如口袋里",
+                "亥": "悬在半空，比如口袋里"
+            }
 
-    answer = ""
+            answer = ""
+            if duty in easy:
+                answer += "不必担心，很可能东西自己就回来了。\n"
+            elif duty in far:
+                answer += "能找到，但是要费点功夫，丢到比较远的地方了。\n"
+            elif duty in nearly:
+                answer += "问题不大，丢的不远。\n"
+            elif duty in hopeless:
+                answer += "很难找回来了。\n"
+
+            answer += "往{}找，{}。".format(direction[duty], place[time_zhi])
+            print(answer)
+
 
 if __name__ == '__main__':
     finder()
