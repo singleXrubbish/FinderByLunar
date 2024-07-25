@@ -1,11 +1,14 @@
-from typing import Set, Dict, Union, Any
-
+from typing import Set, Dict, Union, Any, List
 import pip
-
-pip.main(["install", "lunar_python"])
+import re
 from datetime import datetime
+pip.main(["install", "lunar_python"])
 from lunar_python import Lunar
 from lunar_python import Solar
+
+
+def remove_duplicate_spaces(s):
+    return re.sub(r'\s+', ' ', s).strip()
 
 
 def abort(s: str) -> bool:
@@ -14,23 +17,33 @@ def abort(s: str) -> bool:
 
 def finder():
     while True:
-        input_time = input("请输入丢失物品的时间（例如：2008-08-15 20:30:28，精确到小时）:")
+        input_time = input("请输入丢失物品的时间（例如：2008-08-15 20:30:28，精确到小时即可）:\n")
         if abort(input_time):
             return
 
-        lost_date_time = input_time.split(' ')
+        lost_date_time = remove_duplicate_spaces(input_time).split(' ')
         if len(lost_date_time) != 2:
             print("日期输入格式有误")
             continue
         lost_date = lost_date_time[0].split('-')
-        lost_time = lost_date_time[1].split(':')
-        if len(lost_date) != 3 or len(lost_time) != 3:
+        if ':' in lost_date_time[1]:
+            lost_time: str = lost_date_time[1].split(':')[0]
+        else:
+            lost_time = lost_date_time[1]
+
+        if len(lost_date) != 3:
+            print("日期输入格式有误")
+            continue
+
+        # noinspection PyBroadException
+        try:
+            hour = int(lost_time)
+        except BaseException:
             print("日期输入格式有误")
             continue
 
         try:
-            date = datetime(year=int(lost_date[0]), month=int(lost_date[1]), day=int(lost_date[2]),
-                            hour=int(lost_time[0]), minute=int(lost_time[1]), second=int(lost_time[2]))
+            date = datetime(year=int(lost_date[0]), month=int(lost_date[1]), day=int(lost_date[2]), hour=int(lost_time))
         except ValueError:
             print("日期非法")
             continue
