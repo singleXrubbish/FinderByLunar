@@ -17,8 +17,11 @@ def abort(s: str) -> bool:
 
 def finder():
     while True:
+        print("========================================================================")
         input_time = input("请输入丢失物品的时间（例如：2008-08-15 20:30:28，精确到小时即可）:\n")
         if abort(input_time):
+            print("收工，拜拜！")
+            print("========================================================================")
             return
 
         lost_date_time = remove_duplicate_spaces(input_time).split(' ')
