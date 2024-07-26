@@ -1,6 +1,6 @@
-from typing import Set, Dict, Union, Any, List
 import pip
 import re
+
 from datetime import datetime
 pip.main(["install", "lunar_python"])
 from lunar_python import Lunar
@@ -40,13 +40,13 @@ def finder():
 
         # noinspection PyBroadException
         try:
-            hour = int(lost_time)
+            lost_hour = int(lost_time)
         except BaseException:
             print("日期输入格式有误")
             continue
 
         try:
-            date = datetime(year=int(lost_date[0]), month=int(lost_date[1]), day=int(lost_date[2]), hour=int(lost_time))
+            date = datetime(year=int(lost_date[0]), month=int(lost_date[1]), day=int(lost_date[2]), hour=lost_hour)
         except ValueError:
             print("日期非法")
             continue
@@ -78,7 +78,7 @@ def finder():
             nearly = {"开", "除"}
             hopeless = {"建", "平", "破", "闭"}
 
-            direction: Dict[Union[str, Any], Union[str, Any]] = {
+            direction = {
                 "建": "正西",
                 "除": "正西",
                 "满": "东北",
@@ -93,7 +93,7 @@ def finder():
                 "闭": "正南"
             }
 
-            place: Dict[Union[str, Any], Union[str, Any]] = {
+            place = {
                 "子": "在树林里或者木头多的地方",
                 "丑": "在树林里或者木头多的地方",
                 "寅": "在山坡上面或者斜着的地方",
